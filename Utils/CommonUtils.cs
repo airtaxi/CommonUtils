@@ -34,16 +34,23 @@ public static class CommonUtils
             return false;
         }
     }
-    public static bool CheckPasswordPattern(string password)
+    public static bool CheckPasswordPattern(string password, bool checkCharacterCount = false, int minLength = 0, int maxLength = 0)
     {
         var hasNumber = new Regex(@"[0-9]+");
         var hasUpperChar = new Regex(@"[A-Z]+");
-        var hasMiniMaxChars = new Regex(@".{6,12}");
+        Regex hasMinMaxChars = null;
+        if (checkCharacterCount)
+        {
+            var hasMinMaxCharsExp = @".{MIN,MAX}";
+            hasMinMaxCharsExp = hasMinMaxCharsExp.Replace("MIN", minLength.ToString());
+            hasMinMaxCharsExp = hasMinMaxCharsExp.Replace("MAX", maxLength.ToString());
+            hasMinMaxChars = new Regex(hasMinMaxCharsExp);
+        }
         var hasLowerChar = new Regex(@"[a-z]+");
         var hasSymbols = new Regex(@"[!@#$%^&*()_+=\[{\]};:<>|./?,-]");
 
         return hasNumber.IsMatch(password) && hasUpperChar.IsMatch(password)
-            && hasMiniMaxChars.IsMatch(password) && hasLowerChar.IsMatch(password)
+            && (hasMinMaxChars?.IsMatch(password) ?? true) && hasLowerChar.IsMatch(password)
             && hasSymbols.IsMatch(password);
     }
     private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
