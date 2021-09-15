@@ -13,9 +13,7 @@ public static class CommonUtils
         {
             WriteIndented = true
         };
-
         var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
-
         return JsonSerializer.Serialize(jsonElement, options);
     }
     public static double FloorWithDigit(double input, int digits = 0) => double.Parse(input.ToString($"F{digits}"));
@@ -106,17 +104,11 @@ public static class CommonUtils
         string dateText = created_at.AddHours(offset).ToString();
         var diffTime = DateTime.Now.Subtract(created_at.AddHours(offset));
         if (diffTime.TotalSeconds < 60)
-        {
             dateText = "방금 전";
-        }
         else if (diffTime.TotalMinutes < 60)
-        {
             dateText = ((int)diffTime.TotalMinutes).ToString() + "분 전";
-        }
         else if (diffTime.TotalHours < 24)
-        {
             dateText = ((int)diffTime.TotalHours).ToString() + "시간 전";
-        }
         return dateText;
     }
 }
