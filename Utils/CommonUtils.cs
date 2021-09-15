@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
+using System.IO;
 
 public static class CommonUtils
 {
@@ -54,7 +55,51 @@ public static class CommonUtils
         DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
         return dateTime.AddMilliseconds(unixTime).ToLocalTime();
     }
+    public static string EncryptAes256(string inputText, string password)
+    {
+        var rijndaelCipher = new RijndaelManaged();
 
+        byte[] plainText = Encoding.Unicode.GetBytes(inputText);
+        byte[] salt = Encoding.ASCII.GetBytes(password.Length.ToString());
+
+        var secretKey = new PasswordDeriveBytes(password, salt);
+        var encryptor = rijndaelCipher.CreateEncryptor(secretKey.GetBytes(32), secretKey.GetBytes(16));
+        var memoryStream = new MemoryStream();
+
+        var cryptoStream = new CryptoStream(memoryStream, encryptor, CryptoStreamMode.Write);
+        cryptoStream.Write(plainText, 0, plainText.Length);
+        cryptoStream.FlushFinalBlock();
+
+        byte[] cipherBytes = memoryStream.ToArray();
+
+        memoryStream.Close();
+        cryptoStream.Close();
+
+        return Convert.ToBase64String(cipherBytes);
+    }
+    public static string DecryptAes256(string inputText, string password)
+    {
+        var rijndaelCipher = new RijndaelManaged();
+
+        byte[] encryptedData = Convert.FromBase64String(inputText);
+        byte[] salt = Encoding.ASCII.GetBytes(password.Length.ToString());
+
+        var secretKey = new PasswordDeriveBytes(password, salt);
+
+        var decrypt = rijndaelCipher.CreateDecryptor(secretKey.GetBytes(32), secretKey.GetBytes(16));
+
+        var memoryStream = new MemoryStream(encryptedData);
+
+        var cryptoStream = new CryptoStream(memoryStream, decrypt, CryptoStreamMode.Read);
+        var plainText = new byte[encryptedData.Length];
+
+        int decryptedCount = cryptoStream.Read(plainText, 0, plainText.Length);
+
+        memoryStream.Close();
+        cryptoStream.Close();
+
+        return Encoding.Unicode.GetString(plainText, 0, decryptedCount);
+    }
     public static string GetTimeString(DateTime created_at)
     {
         int offset = DateTimeOffset.Now.Offset.Hours;
