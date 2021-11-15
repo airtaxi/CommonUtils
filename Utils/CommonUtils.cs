@@ -16,10 +16,16 @@ public static class CommonUtils
         var jsonElement = JsonSerializer.Deserialize<JsonElement>(unPrettyJson);
         return JsonSerializer.Serialize(jsonElement, options);
     }
+    public static int CountDecimals(double input)
+    {
+        var text = input.ToString("F99").TrimEnd('0');
+        var start = text.IndexOf('.');
+        return text.Substring(start + 1).Length;
+    }
     public static double FloorWithDigit(double input, int digits = 0) => double.Parse(input.ToString($"F{digits}"));
     public static string ComputeSha256Hash(string text)
     {
-        using var sha256 = new SHA256Managed();
+        var sha256 = new SHA256Managed();
         return BitConverter.ToString(sha256.ComputeHash(Encoding.UTF8.GetBytes(text))).Replace("-", "");
     }
     public static bool CheckValidEmail(string email)
